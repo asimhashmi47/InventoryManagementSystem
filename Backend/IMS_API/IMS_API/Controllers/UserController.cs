@@ -16,33 +16,75 @@ namespace IMS_API.Controllers
         }
 
         [HttpPost("CreateUser")]
-        public IActionResult CreateUser(User user)
+        public IActionResult CreateUser([FromBody] CreateUserDto userDto)
         {
-            _userRepository.CreateUser(user);
-            return Ok();
-        }
+            if (userDto == null) return BadRequest("User data is required.");
 
-        [HttpGet("{GetUserById}")]
-        public ActionResult<User> GetUserById(int id)
-        {
-            var user = _userRepository.GetUserById(id);
-            if (user == null)
-                return NotFound();
-            return Ok(user);
+            // Map CreateUserDto to UserModel
+            var userModel = new UserModel
+            {
+                FullName = userDto.FullName,
+                Email = userDto.Email,
+                Password = userDto.Password,
+                RoleID = userDto.RoleID,
+                IsActive = userDto.IsActive
+            };
+
+            var status = _userRepository.CreateUser(userModel);
+            if (status == "Success")
+            {
+                return Ok("User created successfully.");
+            }
+                
+            return BadRequest(status); // Return relevant failure message
         }
 
         [HttpPut("UpdateUser")]
-        public IActionResult UpdateUser(User user)
+        public IActionResult UpdateUser([FromBody] UpdateUserDto userDto)
         {
-            _userRepository.UpdateUser(user);
-            return Ok();
+            if (userDto == null) return BadRequest("User data is required.");
+
+            // Map UpdateUserDto to UserModel
+            var userModel = new UserModel
+            {
+                UserID = userDto.UserID,
+                FullName = userDto.FullName,
+                Email = userDto.Email,
+                Password = userDto.Password,
+                RoleID = userDto.RoleID,
+                IsActive = userDto.IsActive
+            };
+
+            var status = _userRepository.UpdateUser(userModel);
+            if (status == "Success")
+                return Ok("User updated successfully.");
+            return BadRequest(status); // Return relevant failure message
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<UserModel> GetUserById(int id)
+        {
+            var user = _userRepository.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+                
+            return Ok(user);
         }
 
         [HttpGet("GetAllActiveUsers")]
-        public ActionResult<List<User>> GetAllActiveUsers()
+        public ActionResult<List<UserModel>> GetAllActiveUsers(int pageNumber, int pageSize)
         {
-            var users = _userRepository.GetAllActiveUsers();
-            return Ok(users);
+            try
+            {
+                var users = _userRepository.GetAllActiveUsers(pageNumber, pageSize);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while fetching active users.", Details = ex.Message });
+            }
         }
     }
 }

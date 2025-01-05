@@ -3,20 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using IMS_API.Utilities;
 
 namespace IMS_API.Repositories
 {
     public interface IUserRepository
     {
-        void CreateUser(User user);
-        User GetUserById(int userId);
-        void UpdateUser(User user);
-        List<User> GetAllActiveUsers();
+        string CreateUser(UserModel user);
+        string UpdateUser(UserModel user);
+        UserModel GetUserById(int userId);
+        List<UserModel> GetAllActiveUsers(int pageNumber, int pageSize);
     }
 
     public interface IDatabaseConnectionProvider
     {
-        IDbConnection CreateConnection(); // Use IDbConnection interface
+        IDbConnection CreateConnection();
     }
 
     public class DatabaseConnectionProvider : IDatabaseConnectionProvider
@@ -25,13 +26,14 @@ namespace IMS_API.Repositories
 
         public DatabaseConnectionProvider(DatabaseContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public IDbConnection CreateConnection()
         {
-            // Returning a SqlConnection from Microsoft.Data.SqlClient
-            return _context.CreateConnection();
+            var connection = new SqlConnection(_context.ConnectionString);
+            connection.ConnectionString += ";Pooling=true;Min Pool Size=5;Max Pool Size=50;";
+            return connection;
         }
     }
 
@@ -44,66 +46,104 @@ namespace IMS_API.Repositories
             _connectionProvider = connectionProvider;
         }
 
-        public void CreateUser(User user)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user), "User object cannot be null.");
-            }
-
-            using (var dbConnection = _connectionProvider.CreateConnection())
-            {
-                using (var cmd = new SqlCommand("spCreateUser", (SqlConnection)dbConnection)) // Ensure casting to Microsoft.Data.SqlClient.SqlConnection
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-
-                    cmd.Parameters.Add(new SqlParameter("@FullName", SqlDbType.NVarChar) { Value = user.FullName });
-                    cmd.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = user.Email });
-                    cmd.Parameters.Add(new SqlParameter("@Password", SqlDbType.NVarChar) { Value = user.Password });
-                    cmd.Parameters.Add(new SqlParameter("@Role", SqlDbType.NVarChar) { Value = user.Role });
-                    cmd.Parameters.Add(new SqlParameter("@CreatedOn", SqlDbType.DateTime) { Value = DateTime.Now });
-                    cmd.Parameters.Add(new SqlParameter("@UpdatedOn", SqlDbType.DateTime) { Value = DateTime.Now });
-
-                    try
-                    {
-                        dbConnection.Open();
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (SqlException ex)
-                    {
-                        throw new Exception("An error occurred while creating the user.", ex);
-                    }
-                }
-            }
-        }
-
-        public User GetUserById(int userId)
+        public string CreateUser(UserModel user)
         {
             try
             {
-                using (var dbConnection = _connectionProvider.CreateConnection())
+                using (var connection = _connectionProvider.CreateConnection())
                 {
-                    using (var cmd = new SqlCommand("spGetUserById", (SqlConnection)dbConnection)) // Ensure casting to Microsoft.Data.SqlClient.SqlConnection
+                    using (var command = new SqlCommand("spCreateUser", (SqlConnection)connection))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+                        command.CommandType = CommandType.StoredProcedure;
 
-                        dbConnection.Open();
+                        command.Parameters.Add(new SqlParameter("@FullName", SqlDbType.NVarChar) { Value = user.FullName });
+                        command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = user.Email });
+                        command.Parameters.Add(new SqlParameter("@Password", SqlDbType.NVarChar) { Value = user.Password });
+                        command.Parameters.Add(new SqlParameter("@RoleID", SqlDbType.Int) { Value = user.RoleID });
+                        command.Parameters.Add(new SqlParameter("@IsActive", SqlDbType.Bit) { Value = user.IsActive });
 
-                        using (var reader = cmd.ExecuteReader())
+                        var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        command.Parameters.Add(statusParam);
+
+                        connection.Open();
+                        command.ExecuteNonQuery();
+
+                        return statusParam.Value?.ToString() ?? "Failure";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogic.LogException(nameof(CreateUser), ex.Message, ex.StackTrace);
+                return "Failure";
+            }
+        }
+
+        public string UpdateUser(UserModel user)
+        {
+            try
+            {
+                using (var connection = _connectionProvider.CreateConnection())
+                {
+                    using (var command = new SqlCommand("spUpdateUser", (SqlConnection)connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = user.UserID });
+                        command.Parameters.Add(new SqlParameter("@FullName", SqlDbType.NVarChar) { Value = user.FullName });
+                        command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = user.Email });
+                        command.Parameters.Add(new SqlParameter("@Password", SqlDbType.NVarChar) { Value = user.Password });
+                        command.Parameters.Add(new SqlParameter("@RoleID", SqlDbType.Int) { Value = user.RoleID });
+                        command.Parameters.Add(new SqlParameter("@IsActive", SqlDbType.Bit) { Value = user.IsActive });
+
+                        var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        command.Parameters.Add(statusParam);
+
+                        connection.Open();
+                        command.ExecuteNonQuery();
+
+                        return statusParam.Value?.ToString() ?? "Failure";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogic.LogException(nameof(UpdateUser), ex.Message, ex.StackTrace);
+                return "Failure";
+            }
+        }
+
+        public UserModel GetUserById(int userId)
+        {
+            try
+            {
+                using (var connection = _connectionProvider.CreateConnection())
+                {
+                    using (var command = new SqlCommand("spGetUserById", (SqlConnection)connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+
+                        connection.Open();
+
+                        using (var reader = command.ExecuteReader())
                         {
                             if (reader.Read())
                             {
-                                return new User
+                                return new UserModel
                                 {
                                     UserID = (int)reader["UserID"],
                                     FullName = reader["FullName"].ToString(),
                                     Email = reader["Email"].ToString(),
                                     Password = reader["Password"].ToString(),
-                                    Role = reader["Role"].ToString(),
-                                    IsActive = (bool)reader["IsActive"],
-                                    CreatedOn = (DateTime)reader["CreatedOn"],
-                                    UpdatedOn = (DateTime)reader["UpdatedOn"]
+                                    RoleID = (int)reader["RoleID"],
+                                    IsActive = (bool)reader["IsActive"]
                                 };
                             }
                         }
@@ -117,62 +157,33 @@ namespace IMS_API.Repositories
             return null;
         }
 
-        public void UpdateUser(User user)
+        public List<UserModel> GetAllActiveUsers(int pageNumber, int pageSize)
         {
+            var users = new List<UserModel>();
             try
             {
-                using (var dbConnection = _connectionProvider.CreateConnection())
+                using (var connection = _connectionProvider.CreateConnection())
                 {
-                    using (var cmd = new SqlCommand("spUpdateUser", (SqlConnection)dbConnection)) // Ensure casting to Microsoft.Data.SqlClient.SqlConnection
+                    using (var command = new SqlCommand("spGetAllActiveUsers", (SqlConnection)connection))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Add(new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pageNumber });
+                        command.Parameters.Add(new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize });
 
-                        cmd.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = user.UserID });
-                        cmd.Parameters.Add(new SqlParameter("@FullName", SqlDbType.NVarChar) { Value = user.FullName });
-                        cmd.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = user.Email });
-                        cmd.Parameters.Add(new SqlParameter("@Password", SqlDbType.NVarChar) { Value = user.Password });
-                        cmd.Parameters.Add(new SqlParameter("@Role", SqlDbType.NVarChar) { Value = user.Role });
-                        cmd.Parameters.Add(new SqlParameter("@UpdatedOn", SqlDbType.DateTime) { Value = DateTime.Now });
+                        connection.Open();
 
-                        dbConnection.Open();
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("An error occurred while updating the user.", ex);
-            }
-        }
-
-        public List<User> GetAllActiveUsers()
-        {
-            var users = new List<User>();
-
-            try
-            {
-                using (var dbConnection = _connectionProvider.CreateConnection())
-                {
-                    using (var cmd = new SqlCommand("spGetAllActiveUsers", (SqlConnection)dbConnection)) // Ensure casting to Microsoft.Data.SqlClient.SqlConnection
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        dbConnection.Open();
-
-                        using (var reader = cmd.ExecuteReader())
+                        using (var reader = command.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                users.Add(new User
+                                users.Add(new UserModel
                                 {
                                     UserID = (int)reader["UserID"],
                                     FullName = reader["FullName"].ToString(),
                                     Email = reader["Email"].ToString(),
                                     Password = reader["Password"].ToString(),
-                                    Role = reader["Role"].ToString(),
-                                    IsActive = (bool)reader["IsActive"],
-                                    CreatedOn = (DateTime)reader["CreatedOn"],
-                                    UpdatedOn = (DateTime)reader["UpdatedOn"]
+                                    RoleID = (int)reader["RoleID"],
+                                    IsActive = (bool)reader["IsActive"]
                                 });
                             }
                         }
@@ -181,10 +192,12 @@ namespace IMS_API.Repositories
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while fetching all active users.", ex);
+                throw new Exception("An error occurred while fetching active users.", ex);
             }
 
             return users;
         }
     }
+
+
 }

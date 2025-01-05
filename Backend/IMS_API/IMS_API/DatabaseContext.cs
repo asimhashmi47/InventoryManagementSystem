@@ -1,21 +1,52 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient; 
+﻿using System;
+using System.Data;
+using IMS_API.Repositories;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
 namespace IMS_API
 {
     public class DatabaseContext
     {
-        private readonly string _connectionString;
+        public string ConnectionString { get; }
 
         public DatabaseContext(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration), "Configuration cannot be null.");
+
+            ConnectionString = configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(ConnectionString))
+                throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+        }
+
+        // Add GetConnectionString method to return the connection string
+        public string GetConnectionString()
+        {
+            if (string.IsNullOrWhiteSpace(ConnectionString))
+                throw new InvalidOperationException("Database connection string is null or empty.");
+
+            return ConnectionString;
+        }
+    }
+
+    public class DatabaseConnectionProvider : IDatabaseConnectionProvider
+    {
+        private readonly DatabaseContext _context;
+
+        public DatabaseConnectionProvider(DatabaseContext context)
+        {
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public IDbConnection CreateConnection()
         {
-            return new SqlConnection(_connectionString); // Use Microsoft.Data.SqlClient.SqlConnection
+            var connectionString = _context.GetConnectionString(); // Use the new GetConnectionString() method
+
+            var connection = new SqlConnection(connectionString);
+            connection.ConnectionString += ";Pooling=true;Min Pool Size=5;Max Pool Size=50;";
+            return connection;
         }
     }
 }

@@ -1,3 +1,4 @@
+using IMS_API;
 using IMS_API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,11 +11,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register services
-builder.Services.AddScoped<IMS_API.DatabaseContext>();  // Scoped (or Transient if required)
-builder.Services.AddScoped<IUserRepository, UserRepository>(); // Register IUserRepository
+builder.Services.AddSingleton<DatabaseContext>(); // Register DatabaseContext as a Singleton
 
-// Register IDatabaseConnectionProvider (Scoped to match UserRepository's lifetime)
-builder.Services.AddScoped<IDatabaseConnectionProvider, DatabaseConnectionProvider>();
+// Register IDatabaseConnectionProvider
+builder.Services.AddScoped<IDatabaseConnectionProvider, IMS_API.Repositories.DatabaseConnectionProvider>();
+
+// Register IUserRepository
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
