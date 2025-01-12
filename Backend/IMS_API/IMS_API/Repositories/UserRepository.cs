@@ -152,6 +152,7 @@ namespace IMS_API.Repositories
             }
             catch (Exception ex)
             {
+                AppLogic.LogException(nameof(GetUserById), ex.Message, ex.StackTrace);
                 throw new Exception("An error occurred while fetching the user by ID.", ex);
             }
             return null;
@@ -174,16 +175,22 @@ namespace IMS_API.Repositories
 
                         using (var reader = command.ExecuteReader())
                         {
+                            if (!reader.HasRows)
+                            {
+                                return users; // Return an empty list if no rows exist
+                            }
+
                             while (reader.Read())
                             {
                                 users.Add(new UserModel
                                 {
-                                    UserID = (int)reader["UserID"],
-                                    FullName = reader["FullName"].ToString(),
-                                    Email = reader["Email"].ToString(),
-                                    Password = reader["Password"].ToString(),
-                                    RoleID = (int)reader["RoleID"],
-                                    IsActive = (bool)reader["IsActive"]
+                                    UserID = reader["UserID"] != DBNull.Value ? (int)reader["UserID"] : 0,
+                                    FullName = reader["FullName"]?.ToString() ?? string.Empty,
+                                    Email = reader["Email"]?.ToString() ?? string.Empty,
+                                    Password = reader["Password"]?.ToString() ?? string.Empty,
+                                    RoleID = reader["RoleID"] != DBNull.Value ? (int)reader["RoleID"] : 0,
+                                    Role = reader["Role"]?.ToString() ?? string.Empty,
+                                    IsActive = reader["IsActive"] != DBNull.Value && (bool)reader["IsActive"]
                                 });
                             }
                         }
@@ -192,12 +199,17 @@ namespace IMS_API.Repositories
             }
             catch (Exception ex)
             {
-                throw new Exception("An error occurred while fetching active users.", ex);
+                // Log the exception for debugging
+                AppLogic.LogException(nameof(GetAllActiveUsers),
+                    $"PageNumber: {pageNumber}, PageSize: {pageSize}, Error: {ex.Message}",
+                    ex.StackTrace);
+
+                // Return an empty list in case of an exception
+                return new List<UserModel>();
             }
 
+            // Return the populated list (or empty list if no data)
             return users;
         }
     }
-
-
 }

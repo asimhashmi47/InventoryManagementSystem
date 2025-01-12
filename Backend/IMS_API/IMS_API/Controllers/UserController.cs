@@ -1,5 +1,6 @@
 ﻿using IMS_API.Models;
 using IMS_API.Repositories;
+using IMS_API.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IMS_API.Controllers
@@ -74,17 +75,47 @@ namespace IMS_API.Controllers
         }
 
         [HttpGet("GetAllActiveUsers")]
-        public ActionResult<List<UserModel>> GetAllActiveUsers(int pageNumber, int pageSize)
+        public IActionResult GetAllActiveUsers(int pageNumber, int pageSize)
         {
             try
             {
+                // Fetch data from the repository
                 var users = _userRepository.GetAllActiveUsers(pageNumber, pageSize);
-                return Ok(users);
+
+                if (users == null || users.Count == 0)
+                {
+                    // Return a response indicating no data found
+                    return Ok(new
+                    {
+                        Success = false,
+                        Message = "No active users found.",
+                        Data = new List<UserModel>()
+                    });
+                }
+
+                // Return a success response with the user data
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Active users retrieved successfully.",
+                    Data = users
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { Message = "An error occurred while fetching active users.", Details = ex.Message });
+                // Log the exception for debugging
+                AppLogic.LogException(nameof(GetAllActiveUsers), ex.Message, ex.StackTrace);
+
+                // Return an error response
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "An error occurred while fetching active users.",
+                    Details = ex.Message,
+                    Data = new List<UserModel>()
+                });
             }
         }
+
     }
 }
