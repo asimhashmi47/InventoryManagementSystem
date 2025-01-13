@@ -106,7 +106,8 @@ BEGIN
         u.FullName,
         u.Email,
         u.Password,
-        r.Role AS Role, -- Join Role table to fetch Role name
+		r.RoleID,
+        r.Role AS Role, 
         u.IsActive,
         u.CreatedOn,
         u.UpdatedOn
@@ -127,6 +128,7 @@ BEGIN
         u.FullName,
         u.Email,
         u.Password,
+        u.RoleID,
         r.Role AS Role,
         u.IsActive,
         u.CreatedOn,
@@ -138,6 +140,7 @@ BEGIN
     OFFSET (@PageNumber - 1) * @PageSize ROWS
     FETCH NEXT @PageSize ROWS ONLY;
 END;
+
 
 
 --Optimize Database Queries
@@ -179,4 +182,3 @@ INSERT INTO Role (Role) VALUES
 ('SuperAdmin'),
 ('Admin'),
 ('Standard User');
-
