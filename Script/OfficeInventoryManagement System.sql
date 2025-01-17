@@ -116,6 +116,7 @@ BEGIN
     WHERE u.UserID = @UserID;
 END;
 
+
 CREATE OR ALTER PROCEDURE spGetAllActiveUsers
     @PageNumber INT,
     @PageSize INT
@@ -182,3 +183,110 @@ INSERT INTO Role (Role) VALUES
 ('SuperAdmin'),
 ('Admin'),
 ('Standard User');
+
+----
+
+CREATE TABLE InventoryCategory (
+    CategoryID INT IDENTITY(1,1) PRIMARY KEY,  -- Unique identifier for the category
+    Name NVARCHAR(100) NOT NULL UNIQUE         -- Category name (e.g., Office Supplies, IT Equipment)
+);
+
+
+CREATE TABLE InventoryItem (
+    ItemID INT IDENTITY(1,1) PRIMARY KEY,          -- Unique identifier for each item
+    Name NVARCHAR(100) NOT NULL,                  -- Name of the inventory item
+    Description NVARCHAR(255) NULL,               -- Optional description
+    CategoryID INT NOT NULL,                      -- Foreign key referencing InventoryCategory
+    Quantity INT NOT NULL DEFAULT 0,              -- Current stock level
+    UnitPrice DECIMAL(18, 2) NOT NULL,            -- Price per unit
+    IsActive BIT DEFAULT 1,                       -- Indicates whether the item is active
+    CreatedOn DATETIME NOT NULL DEFAULT GETDATE(),-- Date of creation
+    UpdatedOn DATETIME NOT NULL DEFAULT GETDATE(),-- Date of last update
+    CONSTRAINT FK_InventoryItem_Category FOREIGN KEY (CategoryID) REFERENCES InventoryCategory(CategoryID)
+);
+
+
+CREATE OR ALTER PROCEDURE spCreateInventoryItem
+    @Name NVARCHAR(100),
+    @Description NVARCHAR(255),
+    @CategoryID INT,
+    @Quantity INT,
+    @UnitPrice DECIMAL(18, 2),
+    @Status NVARCHAR(10) OUTPUT -- Returns 'Success' or 'Failure'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        INSERT INTO InventoryItem (Name, Description, CategoryID, Quantity, UnitPrice, CreatedOn, UpdatedOn)
+        VALUES (@Name, @Description, @CategoryID, @Quantity, @UnitPrice, GETDATE(), GETDATE());
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+
+CREATE OR ALTER PROCEDURE spUpdateInventoryItem
+    @ItemID INT,
+    @Name NVARCHAR(100),
+    @Description NVARCHAR(255),
+    @CategoryID INT,
+    @Quantity INT,
+    @UnitPrice DECIMAL(18, 2),
+    @Status NVARCHAR(10) OUTPUT -- Returns 'Success' or 'Failure'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        UPDATE InventoryItem
+        SET Name = @Name,
+            Description = @Description,
+            CategoryID = @CategoryID,
+            Quantity = @Quantity,
+            UnitPrice = @UnitPrice,
+            UpdatedOn = GETDATE()
+        WHERE ItemID = @ItemID;
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+
+CREATE OR ALTER PROCEDURE spGetInventoryItemById
+    @ItemID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT i.ItemID, i.Name, i.Description, c.Name AS Category, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn
+    FROM InventoryItem i
+    INNER JOIN InventoryCategory c ON i.CategoryID = c.CategoryID
+    WHERE i.ItemID = @ItemID
+      AND i.IsActive = 1;
+END;
+
+
+CREATE OR ALTER PROCEDURE spGetAllInventoryItems
+    @PageNumber INT,
+    @PageSize INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT i.ItemID, i.Name, i.Description, c.Name AS Category, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn
+    FROM InventoryItem i
+    INNER JOIN InventoryCategory c ON i.CategoryID = c.CategoryID
+    WHERE i.IsActive = 1
+    ORDER BY i.ItemID
+    OFFSET (@PageNumber - 1) * @PageSize ROWS
+    FETCH NEXT @PageSize ROWS ONLY;
+END;
+
+
