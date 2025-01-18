@@ -9,10 +9,10 @@ namespace IMS_API.Repositories
 {
     public interface IInventoryRepository
     {
-        Task<string> CreateAsync(CreateInventoryItemDto itemDto);
-        Task<string> UpdateAsync(UpdateInventoryItemDto itemDto);
-        Task<InventoryItemModel> GetByIdAsync(int itemId);
-        Task<List<InventoryItemModel>> GetAllAsync(int pageNumber, int pageSize);
+        Task<string> CreateInventoryItem(CreateInventoryItemDto itemDto);
+        Task<string> UpdateInventoryItem(UpdateInventoryItemDto itemDto);
+        Task<InventoryItemModel> GetInventoryItemById(int itemId);
+        Task<List<InventoryItemModel>> GetAllInventoryItems(int pageNumber, int pageSize);
     }
 
     public class InventoryRepository : IInventoryRepository
@@ -24,25 +24,33 @@ namespace IMS_API.Repositories
             _connectionProvider = connectionProvider;
         }
 
-        public async Task<string> CreateAsync(CreateInventoryItemDto itemDto)
+        public async Task<string> CreateInventoryItem(CreateInventoryItemDto itemDto)
         {
+            if (itemDto == null)
+                throw new ArgumentNullException(nameof(itemDto), "Item data cannot be null.");
+
             try
             {
-                using (var connection = _connectionProvider.CreateConnection())
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection())
                 {
-                    using (var command = new SqlCommand("spCreateInventoryItem", (SqlConnection)connection))
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("spCreateInventoryItem", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@Name", itemDto.Name);
-                        command.Parameters.AddWithValue("@Description", itemDto.Description);
+
+                        command.Parameters.AddWithValue("@Name", itemDto.Name ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Description", itemDto.Description ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@CategoryID", itemDto.CategoryID);
                         command.Parameters.AddWithValue("@Quantity", itemDto.Quantity);
                         command.Parameters.AddWithValue("@UnitPrice", itemDto.UnitPrice);
 
-                        var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10) { Direction = ParameterDirection.Output };
+                        var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
                         command.Parameters.Add(statusParam);
 
-                        await connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
 
                         return statusParam.Value?.ToString() ?? "Failure";
@@ -51,64 +59,73 @@ namespace IMS_API.Repositories
             }
             catch (Exception ex)
             {
-                AppLogic.LogException(nameof(CreateAsync), ex.Message, ex.StackTrace);
+                AppLogic.LogException(nameof(CreateInventoryItem), ex.Message, ex.StackTrace);
                 return "Failure";
             }
         }
-
-        public string UpdateInventoryItem(UpdateInventoryItemDto itemDto)
+        //
+        public async Task<string> UpdateInventoryItem(UpdateInventoryItemDto itemDto)
         {
+            if (itemDto == null || itemDto.ItemID <= 0)
+                throw new ArgumentException("Invalid inventory item data.", nameof(itemDto));
+
             try
             {
-                using (var connection = _connectionProvider.CreateConnection())
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection()) // Explicitly cast to SqlConnection
                 {
-                    using (var command = new SqlCommand("spUpdateInventoryItem", (SqlConnection)connection))
+                    await connection.OpenAsync(); // Use OpenAsync for non-blocking connection
+
+                    using (var command = new SqlCommand("spUpdateInventoryItem", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        command.Parameters.Add(new SqlParameter("@ItemID", SqlDbType.Int) { Value = itemDto.ItemID });
-                        command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = itemDto.Name });
-                        command.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar) { Value = itemDto.Description });
-                        command.Parameters.Add(new SqlParameter("@CategoryID", SqlDbType.Int) { Value = itemDto.CategoryID });
-                        command.Parameters.Add(new SqlParameter("@Quantity", SqlDbType.Int) { Value = itemDto.Quantity });
-                        command.Parameters.Add(new SqlParameter("@UnitPrice", SqlDbType.Decimal) { Value = itemDto.UnitPrice });
+                        // Add parameters
+                        command.Parameters.AddWithValue("@ItemID", itemDto.ItemID);
+                        command.Parameters.AddWithValue("@Name", itemDto.Name ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@Description", itemDto.Description ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@CategoryID", itemDto.CategoryID);
+                        command.Parameters.AddWithValue("@Quantity", itemDto.Quantity);
+                        command.Parameters.AddWithValue("@UnitPrice", itemDto.UnitPrice);
 
+                        // Output parameter for status
                         var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10)
                         {
                             Direction = ParameterDirection.Output
                         };
                         command.Parameters.Add(statusParam);
 
-                        connection.Open();
-                        command.ExecuteNonQuery();
+                        // Execute the command asynchronously
+                        await command.ExecuteNonQueryAsync();
 
-                        return statusParam.Value.ToString();
+                        // Return the status output parameter
+                        return statusParam.Value?.ToString() ?? "Failure";
                     }
                 }
             }
             catch (Exception ex)
             {
+                // Log the exception for debugging
                 AppLogic.LogException(nameof(UpdateInventoryItem), ex.Message, ex.StackTrace);
                 return "Failure";
             }
         }
 
-        public InventoryItemModel GetInventoryItemById(int itemId)
+        public async Task<InventoryItemModel> GetInventoryItemById(int itemId)
         {
             try
             {
-                using (var connection = _connectionProvider.CreateConnection())
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection())
                 {
-                    using (var command = new SqlCommand("spGetInventoryItemById", (SqlConnection)connection))
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("spGetInventoryItemById", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.Add(new SqlParameter("@ItemID", SqlDbType.Int) { Value = itemId });
+                        command.Parameters.AddWithValue("@ItemID", itemId);
 
-                        connection.Open();
-
-                        using (var reader = command.ExecuteReader())
+                        using (var reader = await command.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 return new InventoryItemModel
                                 {
@@ -134,24 +151,25 @@ namespace IMS_API.Repositories
             return null;
         }
 
-        public List<InventoryItemModel> GetAllInventoryItems(int pageNumber, int pageSize)
+        public async Task<List<InventoryItemModel>> GetAllInventoryItems(int pageNumber, int pageSize)
         {
             var items = new List<InventoryItemModel>();
+
             try
             {
-                using (var connection = _connectionProvider.CreateConnection())
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection())
                 {
-                    using (var command = new SqlCommand("spGetAllInventoryItems", (SqlConnection)connection))
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("spGetAllInventoryItems", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.Add(new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pageNumber });
-                        command.Parameters.Add(new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize });
+                        command.Parameters.AddWithValue("@PageNumber", pageNumber);
+                        command.Parameters.AddWithValue("@PageSize", pageSize);
 
-                        connection.Open();
-
-                        using (var reader = command.ExecuteReader())
+                        using (var reader = await command.ExecuteReaderAsync())
                         {
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 items.Add(new InventoryItemModel
                                 {

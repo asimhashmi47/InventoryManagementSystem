@@ -1,5 +1,6 @@
 ﻿using IMS_API.Models;
 using IMS_API.Repositories;
+using IMS_API.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IMS_API.Controllers
@@ -17,12 +18,14 @@ namespace IMS_API.Controllers
 
         // POST: api/InventoryItems/create
         [HttpPost("CreateInventoryItem")]
-        public IActionResult CreateInventoryItem([FromBody] CreateInventoryItemDto itemDto)
+        public async Task<IActionResult> CreateInventoryItem([FromBody] CreateInventoryItemDto itemDto)
         {
             if (itemDto == null)
                 return BadRequest(new { Success = false, Message = "Invalid inventory item data." });
 
-            var result = _inventoryRepository.CreateInventoryItem(itemDto);
+            // Await the asynchronous repository method
+            var result = await _inventoryRepository.CreateInventoryItem(itemDto);
+
             if (result == "Success")
                 return Ok(new { Success = true, Message = "Inventory item created successfully." });
 
@@ -31,12 +34,14 @@ namespace IMS_API.Controllers
 
         // PUT: api/InventoryItems/update
         [HttpPut("UpdateInventoryItem")]
-        public IActionResult UpdateInventoryItem([FromBody] UpdateInventoryItemDto itemDto)
+        public async Task<IActionResult> UpdateInventoryItem([FromBody] UpdateInventoryItemDto itemDto)
         {
             if (itemDto == null || itemDto.ItemID <= 0)
                 return BadRequest(new { Success = false, Message = "Invalid inventory item data." });
 
-            var result = _inventoryRepository.UpdateInventoryItem(itemDto);
+            // Await the asynchronous repository method
+            var result = await _inventoryRepository.UpdateInventoryItem(itemDto);
+
             if (result == "Success")
                 return Ok(new { Success = true, Message = "Inventory item updated successfully." });
 
@@ -61,12 +66,30 @@ namespace IMS_API.Controllers
         [HttpGet("GetAllInventoryItems")]
         public async Task<IActionResult> GetAllInventoryItems(int pageNumber = 1, int pageSize = 10)
         {
+            // Validate page number and page size
             if (pageNumber <= 0 || pageSize <= 0)
                 return BadRequest(new { Success = false, Message = "Invalid pagination parameters." });
 
-            var items = await _inventoryRepository.GetAllAsync(pageNumber, pageSize);
+            // Enforce a maximum page size limit (optional)
+            if (pageSize > 100)
+                return BadRequest(new { Success = false, Message = "Page size too large. Max allowed is 100." });
 
-            return Ok(new { Success = true, Data = items });
+            try
+            {
+                // Fetch paginated inventory items
+                var items = await _inventoryRepository.GetAllInventoryItems(pageNumber, pageSize);
+
+                if (items == null)
+                    return NotFound(new { Success = false, Message = "Inventory item not found." });
+
+                return Ok(new { Success = true, Data = items });
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected exceptions and log
+                AppLogic.LogException(nameof(GetAllInventoryItems), ex.Message, ex.StackTrace);
+                return StatusCode(500, new { Success = false, Message = "An error occurred while fetching inventory items." });
+            }
         }
     }
 }

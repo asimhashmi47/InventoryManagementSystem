@@ -265,7 +265,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT i.ItemID, i.Name, i.Description, c.Name AS Category, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn
+    SELECT i.ItemID, i.Name, i.Description, i.CategoryID, c.Name AS Category, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn
     FROM InventoryItem i
     INNER JOIN InventoryCategory c ON i.CategoryID = c.CategoryID
     WHERE i.ItemID = @ItemID
@@ -280,7 +280,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT i.ItemID, i.Name, i.Description, c.Name AS Category, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn
+    SELECT i.ItemID, i.Name, i.Description, i.CategoryID, c.Name AS Category, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn
     FROM InventoryItem i
     INNER JOIN InventoryCategory c ON i.CategoryID = c.CategoryID
     WHERE i.IsActive = 1
@@ -289,4 +289,6 @@ BEGIN
     FETCH NEXT @PageSize ROWS ONLY;
 END;
 
+
+----------------------------
 

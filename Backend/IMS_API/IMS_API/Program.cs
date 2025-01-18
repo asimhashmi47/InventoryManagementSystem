@@ -18,6 +18,10 @@ builder.Services.AddScoped<IDatabaseConnectionProvider, IMS_API.Repositories.Dat
 
 // Register IUserRepository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Register IInventoryRepository
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>(); // Add this line to resolve the InventoryItemsController dependency
+
+
 
 var app = builder.Build();
 
