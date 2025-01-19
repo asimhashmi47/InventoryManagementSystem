@@ -91,5 +91,34 @@ namespace IMS_API.Controllers
                 return StatusCode(500, new { Success = false, Message = "An error occurred while fetching inventory items." });
             }
         }
+        //
+        [HttpPost("Stock-in")]
+        public async Task<IActionResult> StockIn([FromBody] StockTransactionDto stockDto)
+        {
+            if (stockDto == null || stockDto.ItemID <= 0 || stockDto.Quantity <= 0)
+                return BadRequest(new { Success = false, Message = "Invalid stock-in data." });
+
+            var result = await _inventoryRepository.StockIn(stockDto.ItemID, stockDto.Quantity, stockDto.Notes);
+
+            if (result == "Success")
+                return Ok(new { Success = true, Message = "Stock-in successful." });
+
+            return BadRequest(new { Success = false, Message = result });
+        }
+        //
+        [HttpPost("Stock-out")]
+        public async Task<IActionResult> StockOut([FromBody] StockTransactionDto stockDto)
+        {
+            if (stockDto == null || stockDto.ItemID <= 0 || stockDto.Quantity <= 0)
+                return BadRequest(new { Success = false, Message = "Invalid stock-out data." });
+
+            var result = await _inventoryRepository.StockOut(stockDto.ItemID, stockDto.Quantity, stockDto.Notes);
+
+            if (result == "Success")
+                return Ok(new { Success = true, Message = "Stock-out successful." });
+
+            return BadRequest(new { Success = false, Message = result });
+        }
+
     }
 }

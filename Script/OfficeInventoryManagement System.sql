@@ -291,4 +291,98 @@ END;
 
 
 ----------------------------
+-- Track stock levels (quantity in/out)
+-- 1. Create InventoryTransactions Table
 
+CREATE TABLE InventoryTransactions (
+    TransactionID INT IDENTITY(1,1) PRIMARY KEY,    -- Unique identifier for the transaction
+    ItemID INT NOT NULL,                           -- References the InventoryItem table
+    Quantity INT NOT NULL,                         -- Positive for IN, Negative for OUT
+    TransactionType NVARCHAR(50) NOT NULL,         -- 'StockIn' or 'StockOut'
+    TransactionDate DATETIME NOT NULL DEFAULT GETDATE(), -- Date of transaction
+    Notes NVARCHAR(255) NULL,                     -- Optional notes about the transaction
+    CONSTRAINT FK_InventoryTransactions_Item FOREIGN KEY (ItemID) REFERENCES InventoryItem(ItemID)
+);
+
+-----------------
+--Track stock levels (quantity in/out)
+-- Add Stock (Stock-In)
+
+CREATE OR ALTER PROCEDURE spStockIn
+    @ItemID INT,
+    @Quantity INT,
+    @Notes NVARCHAR(255) = NULL,
+    @Status NVARCHAR(10) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Log the transaction
+        INSERT INTO InventoryTransactions (ItemID, Quantity, TransactionType, Notes)
+        VALUES (@ItemID, @Quantity, 'StockIn', @Notes);
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+-----------------
+--Track stock levels (quantity in/out)
+-- Remove Stock (Stock-Out)
+
+CREATE OR ALTER PROCEDURE spStockOut
+    @ItemID INT,
+    @Quantity INT,
+    @Notes NVARCHAR(255) = NULL,
+    @Status NVARCHAR(10) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Validate sufficient stock
+        IF ((SELECT ISNULL(SUM(Quantity), 0) FROM InventoryTransactions WHERE ItemID = @ItemID) < @Quantity)
+        BEGIN
+            SET @Status = 'Insufficient Stock';
+            RETURN;
+        END
+
+        -- Log the transaction
+        INSERT INTO InventoryTransactions (ItemID, Quantity, TransactionType, Notes)
+        VALUES (@ItemID, -@Quantity, 'StockOut', @Notes);
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+---------------------------
+
+--Track stock levels (quantity in/out)
+-- CREATE view Inventory With Total Quantity
+
+CREATE OR ALTER VIEW vwInventoryWithTotalQuantity AS
+SELECT 
+    i.ItemID,
+    i.Name,
+    i.Description,
+    i.CategoryID,
+    i.Quantity AS InitialQuantity, -- Static quantity if any
+    ISNULL(SUM(t.Quantity), 0) AS TotalQuantity, -- Dynamic sum from transactions
+    i.UnitPrice,
+    i.IsActive,
+    i.CreatedOn,
+    i.UpdatedOn
+FROM 
+    InventoryItem i
+LEFT JOIN 
+    InventoryTransactions t ON i.ItemID = t.ItemID
+GROUP BY 
+    i.ItemID, i.Name, i.Description, i.CategoryID, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn;
+
+---------------------------

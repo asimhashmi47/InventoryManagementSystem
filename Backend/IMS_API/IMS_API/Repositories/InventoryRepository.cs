@@ -13,6 +13,8 @@ namespace IMS_API.Repositories
         Task<string> UpdateInventoryItem(UpdateInventoryItemDto itemDto);
         Task<InventoryItemModel> GetInventoryItemById(int itemId);
         Task<List<InventoryItemModel>> GetAllInventoryItems(int pageNumber, int pageSize);
+        Task<string> StockIn(int itemId, int quantity, string notes);
+        Task<string> StockOut(int itemId, int quantity, string notes);
     }
 
     public class InventoryRepository : IInventoryRepository
@@ -194,6 +196,74 @@ namespace IMS_API.Repositories
             }
 
             return items;
+        }
+        //
+        // stock in
+        public async Task<string> StockIn(int itemId, int quantity, string notes)
+        {
+            try
+            {
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection())
+                {
+                    using (var command = new SqlCommand("spStockIn", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@ItemID", itemId);
+                        command.Parameters.AddWithValue("@Quantity", quantity);
+                        command.Parameters.AddWithValue("@Notes", notes ?? (object)DBNull.Value);
+
+                        var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        command.Parameters.Add(statusParam);
+
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
+
+                        return statusParam.Value?.ToString() ?? "Failure";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogic.LogException(nameof(StockIn), ex.Message, ex.StackTrace);
+                return "Failure";
+            }
+        }
+        //
+        // stock out
+        public async Task<string> StockOut(int itemId, int quantity, string notes)
+        {
+            try
+            {
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection())
+                {
+                    using (var command = new SqlCommand("spStockOut", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@ItemID", itemId);
+                        command.Parameters.AddWithValue("@Quantity", quantity);
+                        command.Parameters.AddWithValue("@Notes", notes ?? (object)DBNull.Value);
+
+                        var statusParam = new SqlParameter("@Status", SqlDbType.NVarChar, 10)
+                        {
+                            Direction = ParameterDirection.Output
+                        };
+                        command.Parameters.Add(statusParam);
+
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
+
+                        return statusParam.Value?.ToString() ?? "Failure";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogic.LogException(nameof(StockOut), ex.Message, ex.StackTrace);
+                return "Failure";
+            }
         }
     }
 }

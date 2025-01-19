@@ -36,4 +36,12 @@ namespace IMS_API.Models
         public decimal UnitPrice { get; set; }
         public bool IsActive { get; set; }
     }
+    //
+    public class StockTransactionDto
+    {
+        public int ItemID { get; set; }
+        public int Quantity { get; set; }
+        public string Notes { get; set; }
+    }
+
 }
