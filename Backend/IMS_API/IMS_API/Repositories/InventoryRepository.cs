@@ -15,6 +15,7 @@ namespace IMS_API.Repositories
         Task<List<InventoryItemModel>> GetAllInventoryItems(int pageNumber, int pageSize);
         Task<string> StockIn(int itemId, int quantity, string notes);
         Task<string> StockOut(int itemId, int quantity, string notes);
+        Task<List<LowStockItemModel>> GetLowStockItems();
     }
 
     public class InventoryRepository : IInventoryRepository
@@ -265,5 +266,48 @@ namespace IMS_API.Repositories
                 return "Failure";
             }
         }
+        //
+        // Low Stock Alerts
+        public async Task<List<LowStockItemModel>> GetLowStockItems()
+        {
+            var lowStockItems = new List<LowStockItemModel>();
+
+            try
+            {
+                using (var connection = _connectionProvider.CreateConnection())
+                {
+                    using (var command = new SqlCommand("spGetLowStockItems", (SqlConnection)connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (reader.Read())
+                            {
+                                lowStockItems.Add(new LowStockItemModel
+                                {
+                                    ItemID = (int)reader["ItemID"],
+                                    Name = reader["Name"].ToString(),
+                                    Description = reader["Description"]?.ToString(),
+                                    Category = reader["Category"].ToString(),
+                                    TotalQuantity = reader["TotalQuantity"] != DBNull.Value ? (int)reader["TotalQuantity"] : 0,
+                                    InventoryThreshold = (int)reader["InventoryThreshold"], // Updated
+                                    UnitPrice = (decimal)reader["UnitPrice"],
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogic.LogException(nameof(GetLowStockItems), ex.Message, ex.StackTrace);
+                throw new Exception("An error occurred while fetching low stock items.", ex);
+            }
+            return lowStockItems;
+        }
+        //
+
     }
 }

@@ -375,7 +375,8 @@ SELECT
     i.Quantity AS InitialQuantity, -- Static quantity if any
     ISNULL(SUM(t.Quantity), 0) AS TotalQuantity, -- Dynamic sum from transactions
     i.UnitPrice,
-    i.IsActive,
+    i.InventoryThreshold,
+	i.IsActive,
     i.CreatedOn,
     i.UpdatedOn
 FROM 
@@ -383,6 +384,40 @@ FROM
 LEFT JOIN 
     InventoryTransactions t ON i.ItemID = t.ItemID
 GROUP BY 
-    i.ItemID, i.Name, i.Description, i.CategoryID, i.Quantity, i.UnitPrice, i.IsActive, i.CreatedOn, i.UpdatedOn;
+    i.ItemID, i.Name, i.Description, i.CategoryID, i.Quantity, i.UnitPrice, i.InventoryThreshold, i.IsActive, i.CreatedOn, i.UpdatedOn;
 
 ---------------------------
+
+-- Inventory: Low Stock Alerts
+
+ALTER TABLE InventoryItem
+ADD InventoryThreshold INT NOT NULL DEFAULT 0;
+
+--------------
+
+CREATE OR ALTER PROCEDURE spGetLowStockItems
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        i.ItemID,
+        i.Name,
+        i.Description,
+        i.CategoryID,
+        c.Name AS Category,
+        i.InitialQuantity,
+        i.TotalQuantity,
+        i.InventoryThreshold,
+        i.UnitPrice,
+        i.IsActive,
+        i.CreatedOn,
+        i.UpdatedOn
+    FROM vwInventoryWithTotalQuantity i
+    INNER JOIN InventoryCategory c ON i.CategoryID = c.CategoryID
+    WHERE i.TotalQuantity <= i.InventoryThreshold
+      AND i.IsActive = 1;
+END;
+
+select * from InventoryItem
+

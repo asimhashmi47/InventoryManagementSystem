@@ -43,5 +43,17 @@ namespace IMS_API.Models
         public int Quantity { get; set; }
         public string Notes { get; set; }
     }
+    //
+    public class LowStockItemModel
+    {
+        public int ItemID { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Category { get; set; }
+        public int TotalQuantity { get; set; }
+        public int InventoryThreshold { get; set; }
+        public decimal UnitPrice { get; set; }
+    }
+    //
 
 }

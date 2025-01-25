@@ -119,6 +119,20 @@ namespace IMS_API.Controllers
 
             return BadRequest(new { Success = false, Message = result });
         }
+        //
+        [HttpGet("GetLowStockItems")]
+        public async Task<IActionResult> GetLowStockItems()
+        {
+            try
+            {
+                var lowStockItems = await _inventoryRepository.GetLowStockItems();
+                return Ok(new { Success = true, Data = lowStockItems });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = "An error occurred while fetching low stock items.", Details = ex.Message });
+            }
+        }
 
     }
 }
