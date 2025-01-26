@@ -133,6 +133,95 @@ namespace IMS_API.Controllers
                 return StatusCode(500, new { Success = false, Message = "An error occurred while fetching low stock items.", Details = ex.Message });
             }
         }
+        //
+        [HttpGet("SearchInventoryItems")]
+        public async Task<IActionResult> SearchInventoryItems(
+        [FromQuery] string searchTerm,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var searchResults = await _inventoryRepository.SearchInventoryItems(searchTerm, pageNumber, pageSize);
+                return Ok(new { Success = true, Data = searchResults });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Success = false, Message = "An error occurred while searching inventory items.", Details = ex.Message });
+            }
+        }
+        //
+        [HttpPost("AddBatch")]
+        public async Task<IActionResult> AddBatch([FromBody] CreateBatchDto batchDto)
+        {
+            var result = await _inventoryRepository.AddBatch(batchDto);
+            if (result == "Success")
+                return Ok(new { Success = true, Message = "Batch added successfully." });
+
+            return BadRequest(new { Success = false, Message = "Failed to add batch." });
+        }
+
+        [HttpPut("UpdateBatch")]
+        public async Task<IActionResult> UpdateBatch([FromBody] UpdateBatchDto batchDto)
+        {
+            var result = await _inventoryRepository.UpdateBatch(batchDto);
+            if (result == "Success")
+                return Ok(new { Success = true, Message = "Batch updated successfully." });
+
+            return BadRequest(new { Success = false, Message = "Failed to update batch." });
+        }
+
+        [HttpGet("GetBatchesByItem")]
+        public async Task<IActionResult> GetBatchesByItem(int itemId, int pageNumber = 1, int pageSize = 10)
+        {
+            var batches = await _inventoryRepository.GetBatchesByItem(itemId, pageNumber, pageSize);
+            return Ok(new { Success = true, Data = batches });
+        }
+
+        [HttpDelete("DeleteBatch")]
+        public async Task<IActionResult> DeleteBatch(int batchId)
+        {
+            var result = await _inventoryRepository.DeleteBatch(batchId);
+            if (result == "Success")
+                return Ok(new { Success = true, Message = "Batch deleted successfully." });
+
+            return BadRequest(new { Success = false, Message = "Failed to delete batch." });
+        }
+        //
+        [HttpPost("TransferInventory")]
+        public async Task<IActionResult> TransferInventory([FromBody] TransferInventoryDto transferDto)
+        {
+            if (transferDto == null || string.IsNullOrWhiteSpace(transferDto.ItemName) || transferDto.Quantity <= 0)
+            {
+                return BadRequest(new { Success = false, Message = "Invalid transfer data." });
+            }
+
+            var result = await _inventoryRepository.TransferInventory(
+                transferDto.ItemName,
+                transferDto.Quantity,
+                transferDto.Location,
+                transferDto.UserID,
+                transferDto.Notes
+            );
+
+            if (result == "Success")
+            {
+                return Ok(new { Success = true, Message = "Inventory transfer successful." });
+            }
+            else if (result == "Insufficient Stock")
+            {
+                return BadRequest(new { Success = false, Message = "Insufficient stock available." });
+            }
+            else if (result == "Item Not Found")
+            {
+                return NotFound(new { Success = false, Message = "Item not found." });
+            }
+            else
+            {
+                return StatusCode(500, new { Success = false, Message = "An error occurred during the transfer." });
+            }
+        }
+        //
 
     }
 }
