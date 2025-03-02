@@ -13,6 +13,7 @@ namespace IMS_API.Repositories
         string UpdateUser(UserModel user);
         UserModel GetUserById(int userId);
         List<UserModel> GetAllActiveUsers(int pageNumber, int pageSize);
+        string AuthenticateUser(string email, string password);
     }
 
     public interface IDatabaseConnectionProvider
@@ -210,6 +211,57 @@ namespace IMS_API.Repositories
 
             // Return the populated list (or empty list if no data)
             return users;
+        }
+        //
+        public string AuthenticateUser(string email, string password)
+        {
+            try
+            {
+                using (var connection = (SqlConnection)_connectionProvider.CreateConnection())
+                {
+                    using (var command = new SqlCommand(
+                        "SELECT UserID, Password FROM [User] WHERE Email = @Email AND IsActive = 1",
+                        connection))
+                    {
+                        command.CommandType = CommandType.Text;
+                        command.Parameters.AddWithValue("@Email", email);
+
+                        connection.Open();
+
+                        int userId = 0;
+                        string storedPassword = null;
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                userId = (int)reader["UserID"];
+                                storedPassword = reader["Password"]?.ToString();
+                            }
+                        }
+
+                        // If user does not exist
+                        if (userId == 0)
+                        {
+                            return "User does not exist";
+                        }
+
+                        // Check password (plaintext comparison for demo; use hashing in production)
+                        if (!string.Equals(storedPassword, password))
+                        {
+                            return "Wrong password";
+                        }
+
+                        // Success
+                        return "Success";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogic.LogException(nameof(AuthenticateUser), ex.Message, ex.StackTrace);
+                return "Failure";
+            }
         }
     }
 }

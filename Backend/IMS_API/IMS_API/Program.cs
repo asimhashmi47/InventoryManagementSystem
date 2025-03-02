@@ -22,6 +22,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 // Register ISupplierRepository and SupplierRepository
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+// Register IRoleRepository and IRoleRepository
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
 
 var app = builder.Build();

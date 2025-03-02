@@ -116,6 +116,33 @@ namespace IMS_API.Controllers
                 });
             }
         }
+        //
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginDto loginDto)
+        {
+            // Basic validation for empty fields
+            if (string.IsNullOrWhiteSpace(loginDto.Email) || string.IsNullOrWhiteSpace(loginDto.Password))
+            {
+                return BadRequest(new { Status = "Error", Message = "Email or password cannot be empty." });
+            }
 
+            var result = _userRepository.AuthenticateUser(loginDto.Email, loginDto.Password);
+
+            switch (result)
+            {
+                case "User does not exist":
+                    return NotFound(new { Status = "Error", Message = "User does not exist." });
+
+                case "Wrong password":
+                    return BadRequest(new { Status = "Error", Message = "Wrong password." });
+
+                case "Success":
+                    return Ok(new { Status = "Success", Message = "Login successful." });
+
+                default:
+                    // "Failure" or any unexpected string
+                    return StatusCode(500, new { Status = "Error", Message = "An error occurred during login." });
+            }
+        }
     }
 }

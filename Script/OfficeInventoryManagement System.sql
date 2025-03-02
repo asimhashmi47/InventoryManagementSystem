@@ -173,10 +173,15 @@ END;
 
 
 --
-CREATE TABLE Role (
+
+CREATE TABLE Roles (
     RoleID INT IDENTITY(1,1) PRIMARY KEY,
-    Role NVARCHAR(50) NOT NULL UNIQUE
+    RoleName NVARCHAR(50) NOT NULL, -- e.g., Admin, SuperAdmin, Standard User
+    IsActive BIT NOT NULL DEFAULT 1, 
+    CreatedOn DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedOn DATETIME NOT NULL DEFAULT GETDATE()
 );
+
 
 -- Insert predefined roles
 INSERT INTO Role (Role) VALUES 
@@ -1019,3 +1024,186 @@ BEGIN
 END;
 
 
+---------------------
+-- Create User Roles table
+
+CREATE TABLE UserRoles (
+    UserRoleID INT IDENTITY(1,1) PRIMARY KEY,
+    UserID INT NOT NULL,             -- Foreign Key referencing [User] table
+    RoleID INT NOT NULL,             -- Foreign Key referencing Roles table
+    CreatedOn DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedOn DATETIME NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_UserRoles_User FOREIGN KEY (UserID) REFERENCES [User](UserID),
+    CONSTRAINT FK_UserRoles_Roles FOREIGN KEY (RoleID) REFERENCES Roles(RoleID),
+    CONSTRAINT UQ_UserRole UNIQUE (UserID, RoleID) -- Avoid duplicate roles for same user
+);
+
+---------------------------
+-- create Role
+CREATE OR ALTER PROCEDURE spCreateRole
+    @RoleName NVARCHAR(50),
+    @Status NVARCHAR(10) OUTPUT -- 'Success' or 'Failure'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF EXISTS (SELECT 1 FROM Roles WHERE RoleName = @RoleName AND IsActive = 1)
+        BEGIN
+            SET @Status = 'Role Exists';
+            RETURN;
+        END
+
+        INSERT INTO Roles (RoleName, IsActive, CreatedOn, UpdatedOn)
+        VALUES (@RoleName, 1, GETDATE(), GETDATE());
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+---------------------------
+-- update Role
+
+CREATE OR ALTER PROCEDURE spUpdateRole
+    @RoleID INT,
+    @RoleName NVARCHAR(50),
+    @IsActive BIT,
+    @Status NVARCHAR(10) OUTPUT -- 'Success' or 'Failure'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleID = @RoleID)
+        BEGIN
+            SET @Status = 'Invalid Role';
+            RETURN;
+        END
+
+        UPDATE Roles
+        SET RoleName = @RoleName,
+            IsActive = @IsActive,
+            UpdatedOn = GETDATE()
+        WHERE RoleID = @RoleID;
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+---------------------------
+-- Get Roles by ID
+
+CREATE OR ALTER PROCEDURE spGetRoleById
+    @RoleID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT RoleID, RoleName, IsActive, CreatedOn, UpdatedOn
+    FROM Roles
+    WHERE RoleID = @RoleID;
+END;
+
+------------------------------------
+-- Get all Roles
+
+CREATE OR ALTER PROCEDURE spGetAllRoles
+    @PageNumber INT,
+    @PageSize INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Fetch paginated roles
+    SELECT RoleID, RoleName, IsActive, CreatedOn, UpdatedOn
+    FROM Roles
+    ORDER BY RoleID
+    OFFSET (@PageNumber - 1) * @PageSize ROWS
+    FETCH NEXT @PageSize ROWS ONLY;
+
+    -- Optionally return total count for pagination
+    SELECT COUNT(*) AS TotalCount
+    FROM Roles;
+END;
+
+------------------------------------
+-- Assign Role to User
+
+CREATE OR ALTER PROCEDURE spAssignRoleToUser
+    @UserID INT,
+    @RoleID INT,
+    @Status NVARCHAR(10) OUTPUT -- 'Success', 'Failure', or 'Exists'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Validate Role
+        IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleID = @RoleID AND IsActive = 1)
+        BEGIN
+            SET @Status = 'Invalid Role';
+            RETURN;
+        END
+
+        -- Validate User
+        IF NOT EXISTS (SELECT 1 FROM [User] WHERE UserID = @UserID AND IsActive = 1)
+        BEGIN
+            SET @Status = 'Invalid User';
+            RETURN;
+        END
+
+        -- Check if assignment already exists
+        IF EXISTS (SELECT 1 FROM UserRoles WHERE UserID = @UserID AND RoleID = @RoleID)
+        BEGIN
+            SET @Status = 'Exists';
+            RETURN;
+        END
+
+        INSERT INTO UserRoles (UserID, RoleID, CreatedOn, UpdatedOn)
+        VALUES (@UserID, @RoleID, GETDATE(), GETDATE());
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+-------------------------------
+-- Remove Role from user
+
+CREATE OR ALTER PROCEDURE spRemoveRoleFromUser
+    @UserID INT,
+    @RoleID INT,
+    @Status NVARCHAR(10) OUTPUT -- 'Success' or 'Failure'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM UserRoles WHERE UserID = @UserID AND RoleID = @RoleID)
+        BEGIN
+            SET @Status = 'Not Assigned';
+            RETURN;
+        END
+
+        DELETE FROM UserRoles
+        WHERE UserID = @UserID AND RoleID = @RoleID;
+
+        SET @Status = 'Success';
+    END TRY
+    BEGIN CATCH
+        SET @Status = 'Failure';
+    END CATCH
+END;
+
+-------------------------------
+-- 
+
+select * from [User]
