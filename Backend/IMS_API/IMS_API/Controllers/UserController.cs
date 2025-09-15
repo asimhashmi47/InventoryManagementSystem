@@ -1,12 +1,14 @@
 ﻿using IMS_API.Models;
 using IMS_API.Repositories;
 using IMS_API.Utilities;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IMS_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowAll")] // Applies the CORS policy named "AllowAll" to this controller
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;

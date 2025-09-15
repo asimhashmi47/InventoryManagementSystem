@@ -1,0 +1,62 @@
+/* src/styles/Dashboard.css */
+
+/* Dashboard Card Styles */
+.dashboard-card {
+    position: relative;
+    border-radius: 10px;
+    color: #fff;
+    padding: 20px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Gradient backgrounds for each card */
+  .gradient1 {
+    background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%);
+  }
+  
+  .gradient2 {
+    background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+  }
+  
+  .gradient3 {
+    background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
+  }
+  
+  .gradient4 {
+    background: linear-gradient(135deg, #f83600 0%, #f9d423 100%);
+  }
+  
+  /* Card content styling */
+  .dashboard-card .card-content {
+    z-index: 2;
+  }
+  
+  .dashboard-card h5 {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-card .count {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  
+  .dashboard-card p {
+    margin: 0;
+  }
+  
+  /* Icon positioned at the bottom-right */
+  .dashboard-card .card-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 2.5rem;
+    opacity: 0.3;
+  }
+  

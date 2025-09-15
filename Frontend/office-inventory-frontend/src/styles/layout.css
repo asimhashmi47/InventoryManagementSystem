@@ -1,0 +1,100 @@
+/* Master Layout Styles (Material Bootstrap Feel) */
+
+.layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f4f6f9;
+    overflow: hidden;
+  }
+  
+  /* NAVBAR */
+  .navbar-custom {
+    background-color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 1.5rem;
+    z-index: 1000;
+  }
+  
+  .navbar-custom .btn-logout {
+    border-radius: 20px;
+    padding: 0.25rem 1rem;
+    font-weight: 500;
+  }
+  
+  /* SIDEBAR */
+  .sidebar-custom {
+    background-color: #ffffff;
+    width: 250px;
+    min-width: 250px;
+    height: calc(100vh - 56px); /* Adjust height after navbar */
+    padding: 1rem;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 56px;
+    z-index: 999;
+  }
+  
+  .sidebar-custom .nav-link {
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+  }
+  
+  .sidebar-custom .nav-link:hover {
+    background-color: #f1f3f5;
+    color: #007bff;
+  }
+  
+  /* MAIN CONTENT */
+  .content-area {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  /* --- NAVBAR --- */
+.navbar-custom {
+    background-color: #242424;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+    position: sticky;
+    top: 0;
+  }
+  
+  /* --- SIDEBAR --- */
+  .sidebar-custom {
+    background-color: #242424;
+    width: 250px;
+    min-width: 250px;
+    height: calc(100vh - 56px);
+    padding: 1rem;
+    box-shadow: 5px 0 12px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 56px;
+    z-index: 999;
+    border-right: 1px solid #eaeaea; /* optional for crisper edge */
+  }
+
+/* ✅ Ensure text inside navbar and sidebar appears white */
+.navbar-custom,
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link,
+.navbar-custom .btn-logout {
+  color: #ffffff !important;
+}
+
+.sidebar-custom,
+.sidebar-custom .nav-link,
+.sidebar-custom h6 {
+  color: #ffffff !important;
+}
+
+/* ✅ Optional: Nav links hover effect for dark background */
+.sidebar-custom .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+}
