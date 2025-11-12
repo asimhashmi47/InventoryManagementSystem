@@ -42,11 +42,12 @@ namespace IMS_API
 
         public IDbConnection CreateConnection()
         {
-            var connectionString = _context.GetConnectionString(); // Use the new GetConnectionString() method
+            //var connectionString = _context.GetConnectionString(); // Use the new GetConnectionString() method
+            //var connection = new SqlConnection(connectionString);
+            //connection.ConnectionString += ";Pooling=true;Min Pool Size=5;Max Pool Size=4096;";
+            //return connection;
 
-            var connection = new SqlConnection(connectionString);
-            connection.ConnectionString += ";Pooling=true;Min Pool Size=5;Max Pool Size=50;";
-            return connection;
+            return new SqlConnection(_context.GetConnectionString());
         }
     }
 }

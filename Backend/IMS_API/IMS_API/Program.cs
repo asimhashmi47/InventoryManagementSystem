@@ -23,7 +23,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register services
-builder.Services.AddSingleton<DatabaseContext>(); // Register DatabaseContext as a Singleton
+builder.Services.AddScoped<DatabaseContext>();// Register DatabaseContext as a Scoped service
 
 // Register IDatabaseConnectionProvider
 builder.Services.AddScoped<IDatabaseConnectionProvider, IMS_API.Repositories.DatabaseConnectionProvider>();
