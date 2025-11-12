@@ -13,8 +13,12 @@ const SidebarComponent = () => {
           <span role="img" aria-label="home">🏠</span> Home
         </Nav.Link>
 
-        <Nav.Link as={NavLink} to="/form" activeClassName="active">
-          <span role="img" aria-label="new-form">📝</span> New Form
+        <Nav.Link as={NavLink} to="/stock-transactions" activeClassName="active">
+          <span role="img" aria-label="stock">📊</span> Stock Transactions
+        </Nav.Link>
+
+        <Nav.Link as={NavLink} to="/inventory" activeClassName="active">
+          <span role="img" aria-label="inventory">📋</span> Inventory
         </Nav.Link>
 
         <Nav.Link as={NavLink} to="/suppliers" activeClassName="active">

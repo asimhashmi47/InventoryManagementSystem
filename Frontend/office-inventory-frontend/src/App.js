@@ -4,7 +4,8 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import PrintStickers from "./pages/PrintStickers";
-
+import InventoryManagement from "./pages/InventoryManagement";
+import StockTransactions from "./pages/StockTransactions";
 /**
  * Custom PrivateRoute component
  * 
@@ -49,6 +50,9 @@ function App() {
         <PrivateRoute exact path="/" component={HomePage} />
         <PrivateRoute path="/home" component={HomePage} />
         <PrivateRoute path="/print-stickers" component={PrintStickers} />
+        <PrivateRoute path="/inventory" component={InventoryManagement} />
+        <PrivateRoute path="/stock-transactions" component={StockTransactions} />
+
         {/* Future Note:
             If you're working on additional pages (e.g., /inventory, /settings), 
             add them as <PrivateRoute path="/inventory" component={InventoryPage} />.

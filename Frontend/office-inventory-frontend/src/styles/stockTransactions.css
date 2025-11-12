@@ -1,0 +1,88 @@
+.stock-container {
+  padding: 20px;
+}
+
+.header-section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tab-btn {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s;
+}
+
+.tab-btn.active {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: 500;
+}
+
+.tab-btn:hover {
+  background-color: #e2e6ea;
+}
+
+.stock-form {
+  background: #fff;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.8rem;
+}
+
+.form-group label {
+  margin-bottom: 4px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.full-width {
+  flex: 2;
+}
+
+input[type="text"],
+input[type="number"] {
+  padding: 4px;
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-primary.small-btn {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+.btn-danger {
+  background-color: #dc3545 !important;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #c82333 !important;
+}
