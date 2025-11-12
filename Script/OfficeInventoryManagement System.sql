@@ -1204,6 +1204,20 @@ BEGIN
 END;
 
 -------------------------------
--- 
 
-select * from [User]
+CREATE PROCEDURE spGetAllCategory  
+    @PageNumber INT,  
+    @PageSize INT  
+AS  
+BEGIN  
+    SET NOCOUNT ON;
+
+    SELECT CategoryID, [Name]
+    FROM InventoryCategory WITH (NOLOCK)
+    ORDER BY CategoryID ASC
+	OFFSET (@PageNumber - 1) * @PageSize ROWS    
+    FETCH NEXT @PageSize ROWS ONLY;;
+END;  
+
+-------------------------------
+

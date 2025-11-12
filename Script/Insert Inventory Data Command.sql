@@ -33,3 +33,59 @@ VALUES
 
 --------------------------
 
+-- Insert Inventory Items
+
+INSERT INTO InventoryItem (Name, Description, CategoryID, Quantity, UnitPrice, IsActive, CreatedOn, UpdatedOn) VALUES
+('Pen', 'Buy Blue ball pens', 2, 100, 3000.00, 1, GETDATE(), GETDATE()),
+('Pencil', 'HB graphite pencils', 2, 200, 1500.00, 1, GETDATE(), GETDATE()),
+('Notebook', 'A4 size ruled notebooks', 2, 150, 4500.00, 1, GETDATE(), GETDATE()),
+('Printer', 'HP LaserJet office printer', 4, 5, 65000.00, 1, GETDATE(), GETDATE()),
+('Printer Ink', 'Black ink cartridges for HP printer', 4, 30, 12000.00, 1, GETDATE(), GETDATE()),
+('Desk Chair', 'Ergonomic office chairs', 1, 20, 80000.00, 1, GETDATE(), GETDATE()),
+('Office Desk', 'Wooden office desks', 1, 10, 150000.00, 1, GETDATE(), GETDATE()),
+('WiFi Router', 'Dual-band WiFi router', 5, 8, 24000.00, 1, GETDATE(), GETDATE()),
+('LAN Cable', 'Cat6 LAN cables', 5, 50, 5000.00, 1, GETDATE(), GETDATE()),
+('Keyboard', 'Wireless keyboards', 3, 40, 16000.00, 1, GETDATE(), GETDATE()),
+('Mouse', 'Wireless optical mouse', 3, 40, 12000.00, 1, GETDATE(), GETDATE()),
+('Monitor', 'Dell 24-inch LED monitor', 3, 10, 120000.00, 1, GETDATE(), GETDATE()),
+('CPU', 'Intel Core i5 desktop system', 3, 6, 360000.00, 1, GETDATE(), GETDATE()),
+('UPS', 'Power backup UPS 1200VA', 18, 8, 72000.00, 1, GETDATE(), GETDATE()),
+('Extension Board', '6-socket power extension boards', 18, 25, 12500.00, 1, GETDATE(), GETDATE()),
+('Cleaning Spray', 'Monitor & keyboard cleaning spray', 7, 30, 9000.00, 1, GETDATE(), GETDATE()),
+('Tissue Box', 'Soft tissue boxes for office desks', 7, 40, 8000.00, 1, GETDATE(), GETDATE()),
+('Coffee Machine', 'Automatic office coffee machine', 8, 2, 55000.00, 1, GETDATE(), GETDATE()),
+('Tea Bags', 'Green tea bags', 8, 50, 5000.00, 1, GETDATE(), GETDATE()),
+('Water Dispenser', 'Hot and cold water dispenser', 8, 3, 45000.00, 1, GETDATE(), GETDATE()),
+('Ceiling Light', 'LED ceiling lights', 9, 25, 75000.00, 1, GETDATE(), GETDATE()),
+('Table Lamp', 'Adjustable LED desk lamps', 9, 10, 15000.00, 1, GETDATE(), GETDATE()),
+('Fire Extinguisher', 'CO2 fire extinguisher', 10, 6, 18000.00, 1, GETDATE(), GETDATE()),
+('First Aid Box', 'Complete first aid kit', 10, 5, 7500.00, 1, GETDATE(), GETDATE()),
+('File Cabinet', 'Metal filing cabinets', 11, 5, 60000.00, 1, GETDATE(), GETDATE()),
+('Bookshelf', '5-layer office bookshelf', 11, 4, 48000.00, 1, GETDATE(), GETDATE()),
+('Wall Clock', 'Standard wall clocks', 12, 10, 10000.00, 1, GETDATE(), GETDATE()),
+('Plant Pot', 'Indoor office plant pots', 12, 15, 7500.00, 1, GETDATE(), GETDATE()),
+('AC Split Unit', '1.5 Ton air conditioner', 13, 2, 240000.00, 1, GETDATE(), GETDATE()),
+('Projector', 'Epson multimedia projector', 14, 2, 130000.00, 1, GETDATE(), GETDATE()),
+('Projector Screen', 'Tripod projection screen', 14, 2, 25000.00, 1, GETDATE(), GETDATE()),
+('Telephone', 'Cordless office telephone', 15, 6, 18000.00, 1, GETDATE(), GETDATE()),
+('Headset', 'Noise-cancelling headset', 15, 10, 20000.00, 1, GETDATE(), GETDATE()),
+('Packing Tape', 'Brown packing tapes', 16, 40, 6000.00, 1, GETDATE(), GETDATE()),
+('Bubble Wrap', 'Large bubble wraps', 16, 20, 8000.00, 1, GETDATE(), GETDATE()),
+('Tool Kit', 'Basic maintenance tool kit', 17, 5, 25000.00, 1, GETDATE(), GETDATE()),
+('Screwdriver Set', 'Multi-bit screwdriver set', 17, 10, 8000.00, 1, GETDATE(), GETDATE()),
+('Power Drill', 'Cordless electric drill', 17, 3, 18000.00, 1, GETDATE(), GETDATE()),
+('Extension Wire', 'Long power extension cable', 18, 15, 9000.00, 1, GETDATE(), GETDATE()),
+('USB Drive', '32GB USB flash drives', 3, 25, 12500.00, 1, GETDATE(), GETDATE()),
+('External Hard Drive', '1TB external hard drives', 3, 10, 90000.00, 1, GETDATE(), GETDATE()),
+('Office Keychain', 'Keychains for drawer keys', 19, 30, 3000.00, 1, GETDATE(), GETDATE()),
+('ID Card Holder', 'Plastic ID card holders', 19, 50, 5000.00, 1, GETDATE(), GETDATE()),
+('File Folder', 'A4 size document folders', 2, 100, 10000.00, 1, GETDATE(), GETDATE()),
+('Whiteboard', 'Magnetic whiteboard for meetings', 1, 5, 35000.00, 1, GETDATE(), GETDATE()),
+('Marker', 'Whiteboard markers (black)', 2, 80, 4000.00, 1, GETDATE(), GETDATE()),
+('Stapler', 'Heavy-duty staplers', 2, 30, 6000.00, 1, GETDATE(), GETDATE()),
+('Staple Pins', 'Box of staple pins', 2, 50, 2500.00, 1, GETDATE(), GETDATE()),
+('Paper Rim', 'A4 paper 80gsm', 2, 100, 15000.00, 1, GETDATE(), GETDATE());
+
+
+------------------------
+
