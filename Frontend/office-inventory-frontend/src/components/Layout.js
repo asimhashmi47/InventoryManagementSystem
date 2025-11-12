@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
       <div className="d-flex flex-grow-1">
         <SidebarComponent />
 
-        <Container fluid className="p-4" style={{ overflowY: 'auto' }}>
+        <Container fluid className="p-4 back-color-alice-blue" style={{ overflowY: 'auto' }}>
           {children} {/* This renders the page-specific content */}
         </Container>
       </div>

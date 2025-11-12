@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import PrintStickers from "./pages/PrintStickers";
 
 /**
  * Custom PrivateRoute component
@@ -46,7 +47,8 @@ function App() {
 
         {/* Protected Home route — accessible only after login */}
         <PrivateRoute exact path="/" component={HomePage} />
-
+        <PrivateRoute path="/home" component={HomePage} />
+        <PrivateRoute path="/print-stickers" component={PrintStickers} />
         {/* Future Note:
             If you're working on additional pages (e.g., /inventory, /settings), 
             add them as <PrivateRoute path="/inventory" component={InventoryPage} />.

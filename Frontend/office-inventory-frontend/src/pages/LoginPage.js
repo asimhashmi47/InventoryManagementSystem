@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Container, Form, Button } from 'react-bootstrap';
 
+// Base URL
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
 const LoginPage = () => {
   const history = useHistory();
   const [username, setUsername] = useState('');
@@ -18,7 +21,7 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await fetch('https://localhost:7173/api/User/login', {
+      const response = await fetch(`${API_BASE_URL}/api/User/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: username, password }),
@@ -33,7 +36,10 @@ const LoginPage = () => {
         setError(data.message || 'Invalid credentials');
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      debugger;
+      console.log("error: "  + err);
+      console.log("api base url " + API_BASE_URL);
+      setError('Network error: ' + err.message.toString());
     }
   };
 

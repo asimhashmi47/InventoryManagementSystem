@@ -1,0 +1,99 @@
+.print-container {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+}
+
+/* Form + Preview split */
+.form-section,
+.preview-section {
+  flex: 1;
+}
+
+/* ✅ Exact 3 x 3 inch square */
+.sticker-preview.square {
+  width: 2.8in;
+  height: 2in;
+  border-radius: 18px;
+  border: 2px solid #333;
+  background: white;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Fixed grid layout to stop shifting */
+.sticker-row {
+  display: grid;
+  grid-template-columns: 22% 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Label column */
+.label {
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* Value */
+.value {
+  min-height: 1.2em;
+  line-height: 1.2em;
+  word-break: break-word;
+  text-transform: uppercase;
+}
+
+/* Underlined fields */
+.underline {
+  border-bottom: 1px solid #000;
+  padding-bottom: 1px;
+}
+
+/* Footer full width */
+.footer-full {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* ✅ Print only sticker */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+.margin-left-3{
+  margin-top: 3.5rem;
+}
+
+/* QR Code container */
+.qr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+/* Limit QR size for screen preview */
+.qr-preview {
+  max-width: 50px;
+  max-height: 50px;
+}
+
+/* ✅ During printing, auto-scale QR smaller for sticker fit */
+@media print {
+  .qr-preview {
+    transform: scale(0.75);
+    transform-origin: center;
+  }
+}

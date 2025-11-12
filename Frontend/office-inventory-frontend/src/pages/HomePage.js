@@ -13,7 +13,7 @@
 
 import React from 'react';
 import Layout from '../components/Layout';
-import '../styles/Dashboard.css'; 
+import '../styles/DashboardCards.css'; 
 
 const HomePage = () => {
   return (
@@ -27,7 +27,7 @@ const HomePage = () => {
               <div className="card-content">
                 <h5>Total Products</h5>
                 <h2 className="count">4555</h2>
-                <p>Jan - March 2019</p>
+                {/* <p>Jan - March 2019</p> */}
               </div>
               <div className="card-icon">
                 <i className="fas fa-shopping-cart"></i>
@@ -41,7 +41,7 @@ const HomePage = () => {
               <div className="card-content">
                 <h5>Low Stock Products</h5>
                 <h2 className="count">851</h2>
-                <p>Jan - March 2019</p>
+                {/* <p>Jan - March 2019</p> */}
               </div>
               <div className="card-icon">
                 <i className="fas fa-exclamation-triangle"></i>
@@ -55,7 +55,7 @@ const HomePage = () => {
               <div className="card-content">
                 <h5>Out of Stock Products</h5>
                 <h2 className="count">120</h2>
-                <p>Jan - March 2019</p>
+                {/* <p>Jan - March 2019</p> */}
               </div>
               <div className="card-icon">
                 <i className="fas fa-times-circle"></i>
@@ -69,7 +69,7 @@ const HomePage = () => {
               <div className="card-content">
                 <h5>Most Stock Product</h5>
                 <h2 className="count">99%</h2>
-                <p>Jan - March 2019</p>
+                {/* <p>Jan - March 2019</p> */}
               </div>
               <div className="card-icon">
                 <i className="fas fa-box-open"></i>
